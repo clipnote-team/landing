@@ -1,0 +1,1436 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>clipnote — 흘려보던 숏폼이, 쌓이는 지식이 됩니다</title>
+<meta name="description" content="유튜브 쇼츠와 인스타 릴스를 공유하면, clipnote의 AI가 영상을 분석해 핵심만 카드로 정리해 줍니다. 주제별 방에 모아 두고 요약·검색·대화로 다시 꺼내 쓰세요." />
+<meta name="theme-color" content="#FFFCF8" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="clipnote — 흘려보던 숏폼이, 쌓이는 지식이 됩니다" />
+<meta property="og:description" content="본/공유한 쇼츠·릴스를 AI가 분석·정리해 주는 모바일 앱. 출시 알림을 신청하세요." />
+<meta property="og:locale" content="ko_KR" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23F6FAF2'/%3E%3Cpath d='M11 9.5v9a5 5 0 0 0 10 0v-10a3.2 3.2 0 0 0-6.4 0v10a1.5 1.5 0 0 0 3 0V10' fill='none' stroke='%23789966' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" />
+<style>
+/* ============ tokens — clipnote 디자인 하네스 (mobile/design) ============ */
+:root{
+  --primary:#9DBF89;
+  --primary-deep:#789966;
+  --primary-soft:#F6FAF2;
+  --bg:#FFFCF8;
+  --card:#FFFFFF;
+  --border:#DDEBD4;
+  --ink:#20261C;
+  --ink-sub:#70786B;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px;
+  --maxw:1140px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  --shadow-card:0 1px 2px rgba(32,38,28,.04), 0 8px 24px -16px rgba(32,38,28,.18);
+  --shadow-float:0 24px 60px -28px rgba(32,38,28,.34);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+img,svg{display:block}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+::selection{background:var(--primary);color:#fff}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.section{padding:clamp(68px,11vw,128px) 0}
+.section[id]{scroll-margin-top:86px}
+
+/* ============ 공용 타이포 ============ */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.8rem;font-weight:700;letter-spacing:.04em;
+  color:var(--primary-deep);
+  background:var(--primary-soft);
+  border:1px solid var(--border);
+  padding:7px 14px;border-radius:999px;
+}
+.eyebrow::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--primary-deep);
+}
+h1,h2,h3{letter-spacing:-.022em;line-height:1.18;font-weight:800}
+.h-sec{font-size:clamp(1.72rem,3.4vw,2.5rem)}
+.lead{color:var(--ink-sub);font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.75}
+.section-head{max-width:600px;margin:0 auto clamp(40px,6vw,64px);text-align:center}
+.section-head .lead{margin-top:16px}
+
+/* ============ 버튼 ============ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:700;font-size:1rem;line-height:1;
+  padding:15px 24px;border-radius:var(--r-lg);
+  transition:transform .25s var(--ease), box-shadow .25s var(--ease), background .2s var(--ease);
+  white-space:nowrap;
+}
+.btn-primary{background:var(--primary-deep);color:#fff;box-shadow:0 10px 22px -12px rgba(120,153,102,.7)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(120,153,102,.78)}
+.btn-primary:active{transform:translateY(0)}
+.btn-cream{background:var(--bg);color:var(--ink)}
+.btn-cream:hover{transform:translateY(-2px);box-shadow:0 16px 34px -14px rgba(0,0,0,.45)}
+.btn-ghost{color:var(--ink-sub);padding:10px 12px}
+.btn-ghost:hover{color:var(--ink)}
+
+/* ============ 네비 ============ */
+.nav{
+  position:sticky;top:0;z-index:100;
+  transition:background .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease);
+  border-bottom:1px solid transparent;
+}
+.nav.scrolled{
+  background:rgba(255,252,248,.86);
+  backdrop-filter:saturate(150%) blur(12px);
+  -webkit-backdrop-filter:saturate(150%) blur(12px);
+  border-bottom-color:var(--border);
+}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
+.brand{display:flex;align-items:center;gap:9px}
+.brand-mark{
+  font-family:'Fraunces',serif;font-weight:600;
+  font-size:1.42rem;letter-spacing:-.01em;color:var(--ink);
+}
+.brand svg{width:22px;height:22px}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-link{
+  font-size:.95rem;font-weight:600;color:var(--ink-sub);
+  padding:10px 14px;border-radius:var(--r-md);transition:color .2s,background .2s;
+}
+.nav-link:hover{color:var(--ink);background:var(--primary-soft)}
+.nav-cta{padding:11px 18px;font-size:.95rem}
+@media(max-width:680px){.nav-links .nav-link{display:none}}
+
+/* ============ 히어로 ============ */
+.hero{position:relative;padding:clamp(48px,8vw,92px) 0 clamp(64px,10vw,116px);overflow:hidden}
+.hero-grid{
+  display:grid;grid-template-columns:1.05fr .95fr;
+  gap:clamp(36px,6vw,72px);align-items:center;
+}
+.hero-copy{max-width:560px}
+.hero h1{
+  font-size:clamp(2.3rem,5.3vw,3.7rem);margin:22px 0 20px;
+}
+.hero h1 .accent{color:var(--primary-deep)}
+.hero .lead{max-width:494px}
+.hero-stage{display:flex;justify-content:center;position:relative}
+
+/* soft blobs */
+.blob{position:absolute;border-radius:50%;filter:blur(58px);z-index:0;pointer-events:none}
+.blob-a{width:380px;height:380px;background:rgba(157,191,137,.34);top:-60px;right:-70px}
+.blob-b{width:300px;height:300px;background:rgba(221,235,212,.6);bottom:-90px;left:-60px}
+.hero .wrap{position:relative;z-index:1}
+
+/* signup form */
+.signup{margin-top:30px;max-width:472px}
+.signup-row{
+  display:flex;gap:10px;background:var(--card);
+  border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:7px;box-shadow:var(--shadow-card);
+  transition:border-color .2s var(--ease), box-shadow .2s var(--ease);
+}
+.signup-row:focus-within{
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px var(--primary-soft), var(--shadow-card);
+}
+.signup input[type=email]{
+  flex:1;min-width:0;border:none;background:none;outline:none;
+  font-size:1rem;color:var(--ink);padding:12px 14px;
+}
+.signup input[type=email]::placeholder{color:var(--ink-sub)}
+.signup .btn{flex-shrink:0}
+.signup-note{
+  display:flex;align-items:center;gap:7px;
+  margin-top:13px;font-size:.85rem;color:var(--ink-sub);
+}
+.signup-note svg{width:15px;height:15px;flex-shrink:0;color:var(--primary-deep)}
+.signup-msg{
+  margin-top:14px;font-size:.92rem;font-weight:600;
+  display:none;align-items:center;gap:8px;
+}
+.signup-msg svg{width:18px;height:18px;flex-shrink:0}
+.signup-msg.ok{color:var(--primary-deep)}
+.signup-msg.err{color:#a8553f}
+.signup-msg.show{display:flex;animation:popIn .4s var(--ease)}
+.signup.done .signup-row,.signup.done .signup-note{display:none}
+@keyframes popIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media(max-width:560px){
+  .signup-row{flex-direction:column;gap:7px}
+  .signup .btn{width:100%}
+}
+
+/* ============ 폰 목업 ============ */
+.phone-stage{width:320px;height:664px;position:relative;z-index:1}
+.phone{
+  width:320px;height:664px;position:relative;
+  background:#ECECEA;border-radius:48px;padding:7px;
+  box-shadow:var(--shadow-float), 0 0 0 1px rgba(32,38,28,.06) inset;
+}
+.phone-screen{
+  position:relative;width:100%;height:100%;
+  background:var(--bg);border-radius:42px;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.phone-island{
+  position:absolute;top:15px;left:50%;transform:translateX(-50%);
+  width:104px;height:28px;background:#15170f;border-radius:999px;z-index:6;
+}
+/* status bar */
+.sb{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 26px 4px;font-size:12px;font-weight:700;color:var(--ink);
+}
+.sb-ic{display:flex;align-items:center;gap:5px}
+.sb-ic svg{width:16px;height:11px}
+.app{flex:1;display:flex;flex-direction:column;min-height:0;font-size:12px}
+
+/* app header */
+.ah{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 14px 11px;border-bottom:1px solid var(--border);
+}
+.ic-btn{
+  width:30px;height:30px;border-radius:9px;display:flex;
+  align-items:center;justify-content:center;color:var(--ink);flex-shrink:0;
+}
+.ic-btn svg{width:18px;height:18px}
+.ah-room{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.ah-avatar{
+  width:34px;height:34px;border-radius:50%;background:var(--primary-soft);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  color:var(--primary-deep);flex-shrink:0;
+}
+.ah-avatar svg{width:18px;height:18px}
+.ah-meta{min-width:0}
+.ah-meta b{display:block;font-size:14px;font-weight:700;color:var(--ink)}
+.ah-meta span{font-size:11px;color:var(--ink-sub)}
+.ah-actions{display:flex;gap:2px}
+
+/* tabs */
+.tabs{display:flex;padding:0 14px;border-bottom:1px solid var(--border);gap:18px}
+.tab{
+  padding:11px 2px;font-size:12.5px;font-weight:600;color:var(--ink-sub);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab.on{color:var(--primary-deep);font-weight:700;border-bottom-color:var(--primary-deep)}
+
+/* url bar */
+.urlbar{
+  display:flex;align-items:center;gap:8px;margin:13px 14px 4px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:10px 10px 10px 12px;
+}
+.urlbar>svg{width:15px;height:15px;color:var(--ink-sub);flex-shrink:0}
+.urlbar span{flex:1;min-width:0;font-size:11.5px;color:var(--ink-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.urlbar-add{
+  width:26px;height:26px;border-radius:8px;background:var(--primary-deep);
+  display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;
+}
+.urlbar-add svg{width:14px;height:14px}
+
+/* feed */
+.feed{flex:1;overflow:hidden;padding:8px 14px 4px;display:flex;flex-direction:column;gap:9px}
+.fi{
+  display:flex;gap:10px;align-items:flex-start;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:11px;
+}
+.fi-check{
+  width:19px;height:19px;border-radius:50%;border:1.6px solid var(--border);
+  flex-shrink:0;margin-top:15px;display:flex;align-items:center;justify-content:center;
+}
+.fi.on .fi-check{background:var(--primary-deep);border-color:var(--primary-deep)}
+.fi-check svg{width:11px;height:11px;color:#fff;opacity:0}
+.fi.on .fi-check svg{opacity:1}
+.fi-thumb{
+  width:56px;height:56px;border-radius:var(--r-md);flex-shrink:0;position:relative;
+  overflow:hidden;
+}
+.fi-thumb.t1{background:linear-gradient(140deg,#d3c4ad,#a8987d)}
+.fi-thumb.t2{background:linear-gradient(140deg,#b7c7aa,#869a76)}
+.fi-thumb.t3{background:linear-gradient(140deg,#cabfae,#9c8f7c)}
+.fi-dur{
+  position:absolute;right:4px;bottom:4px;font-size:9px;font-weight:700;color:#fff;
+  background:rgba(20,23,15,.66);padding:1.5px 4px;border-radius:5px;
+}
+.fi-body{flex:1;min-width:0}
+.fi-title{
+  font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.fi-src{font-size:10.5px;color:var(--ink-sub);margin-top:3px}
+.fi-tags{display:flex;gap:4px;margin-top:6px}
+.pchip{
+  font-size:9.5px;font-weight:600;color:var(--primary-deep);
+  background:var(--primary-soft);border-radius:999px;padding:3px 8px;
+}
+.fi-by{font-size:10px;color:var(--ink-sub);margin-top:6px}
+.fi-bm{color:var(--ink-sub);flex-shrink:0;margin-top:2px}
+.fi-bm svg{width:15px;height:15px}
+
+/* feed bottom */
+.feed-bottom{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 14px;border-top:1px solid var(--border);background:var(--bg);
+}
+.feed-count{font-size:11.5px;color:var(--ink-sub)}
+.feed-count b{color:var(--ink);font-weight:700}
+.feed-cta{
+  display:flex;align-items:center;gap:5px;
+  background:var(--primary-deep);color:#fff;font-size:12.5px;font-weight:700;
+  padding:10px 16px;border-radius:var(--r-lg);
+}
+.feed-cta svg{width:13px;height:13px}
+
+/* ============ AI 요약 폰 ============ */
+.sumcard{
+  margin:13px 14px 0;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-xl);padding:14px;
+}
+.sumcard-h{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.sumcard-h svg{width:15px;height:15px;color:var(--primary-deep)}
+.sumcard-h b{font-size:13px;font-weight:700;color:var(--ink)}
+.sumcard p.sum{font-size:11.5px;color:var(--ink-sub);line-height:1.6}
+.sum-label{font-size:11px;font-weight:700;color:var(--ink);margin:11px 0 6px}
+.sum-tags{display:flex;flex-wrap:wrap;gap:5px}
+.sum-bullets{display:flex;flex-direction:column;gap:5px}
+.sum-bullets li{
+  list-style:none;font-size:11px;color:var(--ink-sub);line-height:1.5;
+  padding-left:13px;position:relative;
+}
+.sum-bullets li::before{
+  content:"";position:absolute;left:2px;top:6px;width:4px;height:4px;
+  border-radius:50%;background:var(--primary);
+}
+.chat{padding:12px 14px 4px;display:flex;flex-direction:column;gap:9px;flex:1}
+.bubble{max-width:78%;font-size:11.5px;line-height:1.55;padding:9px 12px}
+.bubble.me{
+  align-self:flex-end;background:var(--primary);color:#fff;
+  border-radius:14px 14px 4px 14px;font-weight:500;
+}
+.bubble.ai{
+  align-self:flex-start;background:var(--card);border:1px solid var(--border);
+  color:var(--ink);border-radius:14px 14px 14px 4px;
+}
+.chat-input{
+  display:flex;align-items:center;gap:8px;margin:6px 14px 0;
+  background:var(--card);border:1px solid var(--border);border-radius:999px;
+  padding:8px 8px 8px 14px;
+}
+.chat-input span{flex:1;font-size:11.5px;color:var(--ink-sub)}
+.chat-input .chat-send{
+  width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:var(--primary-deep);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+}
+.chat-send svg{width:14px;height:14px}
+
+/* ============ 문제 인식 ============ */
+.pains{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:8px}
+.pain{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:28px;
+}
+.pain-q{
+  font-size:1.06rem;font-weight:800;color:var(--ink);
+  display:flex;align-items:center;gap:9px;margin-bottom:10px;
+}
+.pain-q .qm{
+  width:26px;height:26px;border-radius:8px;background:var(--primary-soft);
+  border:1px solid var(--border);color:var(--primary-deep);
+  display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;
+}
+.pain p{color:var(--ink-sub);font-size:.97rem;line-height:1.7}
+.pain-resolve{
+  text-align:center;margin-top:32px;font-size:clamp(1.05rem,2vw,1.3rem);
+  font-weight:700;color:var(--ink);
+}
+.pain-resolve em{color:var(--primary-deep);font-style:normal}
+@media(max-width:900px){.pain-grid{grid-template-columns:1fr;max-width:480px;margin-left:auto;margin-right:auto}}
+
+/* ============ 기능 ============ */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.feat{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:30px 26px;
+  transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
+}
+.feat:hover{transform:translateY(-5px);box-shadow:var(--shadow-card);border-color:var(--primary)}
+.feat-ic{
+  width:52px;height:52px;border-radius:var(--r-md);
+  background:var(--primary-soft);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--primary-deep);
+  margin-bottom:18px;
+}
+.feat-ic svg{width:26px;height:26px}
+.feat-n{font-size:.78rem;font-weight:700;color:var(--primary-deep);letter-spacing:.04em}
+.feat h3{font-size:1.22rem;font-weight:800;margin:7px 0 11px}
+.feat p{color:var(--ink-sub);font-size:.97rem;line-height:1.72}
+@media(max-width:860px){.feat-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto}}
+
+/* ============ 쇼케이스 ============ */
+.showcase{background:var(--primary-soft)}
+.show-grid{
+  display:grid;grid-template-columns:.92fr 1.08fr;gap:clamp(36px,6vw,76px);
+  align-items:center;
+}
+.show-copy h2{margin-bottom:14px}
+.show-list{margin-top:26px;display:flex;flex-direction:column;gap:14px}
+.show-item{display:flex;gap:14px;align-items:flex-start}
+.show-item .dot{
+  width:38px;height:38px;border-radius:var(--r-md);flex-shrink:0;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--primary-deep);
+}
+.show-item .dot svg{width:19px;height:19px}
+.show-item h4{font-size:1.04rem;font-weight:700;margin-bottom:2px}
+.show-item p{color:var(--ink-sub);font-size:.93rem;line-height:1.6}
+.show-stage{display:flex;justify-content:center}
+@media(max-width:880px){
+  .show-grid{grid-template-columns:1fr;gap:48px}
+  .show-copy{text-align:center;max-width:520px;margin:0 auto}
+  .show-list{text-align:left;max-width:380px;margin-left:auto;margin-right:auto}
+}
+
+/* ============ 작동 방식 — 화면 흐름 데모 ============ */
+.flow-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:clamp(36px,6vw,72px);align-items:center;
+}
+.flow-steps{display:flex;flex-direction:column;gap:14px}
+.flow-step{
+  display:flex;gap:15px;padding:20px 22px;border-radius:var(--r-xl);
+  background:var(--card);border:1px solid var(--border);
+  transition:border-color .45s var(--ease),background .45s var(--ease);
+}
+.flow-step.active{border-color:var(--primary);background:var(--primary-soft)}
+.flow-num{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;font-weight:600;font-size:1.1rem;
+  background:var(--bg);border:1px solid var(--border);color:var(--ink-sub);
+  transition:background .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease);
+}
+.flow-step.active .flow-num{background:var(--primary-deep);border-color:var(--primary-deep);color:#fff}
+.flow-tx h3{font-size:1.12rem;font-weight:800;margin-bottom:5px}
+.flow-tx p{color:var(--ink-sub);font-size:.95rem;line-height:1.65}
+.flow-stage{display:flex;justify-content:center}
+@media(max-width:880px){
+  .flow-grid{grid-template-columns:1fr;gap:42px}
+  .flow-stage{order:-1}
+  .flow-steps{max-width:480px;margin:0 auto}
+}
+
+/* 데모 폰: 장면 필름스트립 */
+.demo{flex:1;position:relative;overflow:hidden;transition:opacity .38s var(--ease)}
+.demo.fading{opacity:0}
+.demo-track{display:flex;width:300%;height:100%;transition:transform .55s var(--ease)}
+.demo-track.no-anim{transition:none}
+.demo-panel{
+  width:33.3333%;flex-shrink:0;height:100%;overflow:hidden;
+  background:var(--bg);display:flex;flex-direction:column;font-size:12px;
+}
+.demo .rv{opacity:0;transform:translateY(9px)}
+
+/* Scene A — 공유 시트 */
+.scn-share{position:relative}
+.dvid{
+  flex:1;position:relative;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(168deg,#4a5340 0%,#2a3122 58%,#191d13 100%);
+}
+.dvid-play{
+  width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.16);
+  display:flex;align-items:center;justify-content:center;
+}
+.dvid-play svg{width:17px;height:17px;color:#fff;margin-left:3px}
+.dvid-side{position:absolute;right:11px;bottom:104px;display:flex;flex-direction:column;gap:13px}
+.dvid-side span{
+  width:31px;height:31px;border-radius:50%;background:rgba(255,255,255,.14);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+}
+.dvid-side span svg{width:15px;height:15px}
+.dvid-cap{position:absolute;left:14px;right:50px;bottom:96px;color:#fff}
+.dvid-cap b{display:block;font-size:11px;font-weight:700;margin-bottom:3px}
+.dvid-cap p{font-size:10px;color:rgba(255,255,255,.74);line-height:1.4}
+.dvid::after{
+  content:"";position:absolute;inset:0;background:rgba(14,16,10,.52);
+  opacity:0;transition:opacity .45s var(--ease) .1s;
+}
+.scn-share.live .dvid::after{opacity:1}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;background:var(--card);
+  border-top:1px solid var(--border);border-radius:22px 22px 0 0;
+  padding:11px 15px 22px;transform:translateY(120%);
+}
+.scn-share.live .sheet{animation:sheetUp .55s var(--ease) .2s both}
+@keyframes sheetUp{to{transform:translateY(0)}}
+.sheet-grab{width:34px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 13px}
+.sheet-h{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:13px}
+.sheet-apps{display:flex;gap:8px}
+.sapp{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sapp-ic{
+  width:47px;height:47px;border-radius:14px;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  background:#ECEBE5;color:#a2a298;
+}
+.sapp-ic svg{width:22px;height:22px}
+.sapp span{font-size:9px;color:var(--ink-sub)}
+.sapp.clip .sapp-ic{background:var(--primary-soft);color:var(--primary-deep);border:1px solid var(--border)}
+.sapp.clip span{color:var(--ink);font-weight:700}
+.sapp.clip .sapp-ic::after{
+  content:"";position:absolute;inset:-5px;border-radius:18px;
+  border:2px solid var(--primary-deep);opacity:0;transform:scale(.78);
+}
+.scn-share.live .sapp.clip .sapp-ic{animation:tapPress .42s var(--ease) 1.05s both}
+.scn-share.live .sapp.clip .sapp-ic::after{animation:ringPop .45s var(--ease) 1.22s both}
+@keyframes tapPress{0%,100%{transform:scale(1)}45%{transform:scale(.88)}}
+@keyframes ringPop{to{opacity:1;transform:scale(1)}}
+
+/* Scene B — 카드 분석 */
+.fi-new{position:relative;height:82px;padding:0;overflow:hidden}
+.fi-load,.fi-done{position:absolute;inset:0;padding:11px;display:flex;gap:10px;align-items:flex-start}
+.scn-feed.live .fi-new{animation:cardIn .5s var(--ease) .2s both}
+@keyframes cardIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.fi-load{opacity:1}
+.fi-done{opacity:0}
+.scn-feed.live .fi-load{animation:fadeOut .35s var(--ease) 1.8s both}
+.scn-feed.live .fi-done{animation:fadeIn .4s var(--ease) 2s both}
+@keyframes fadeOut{to{opacity:0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.fi-load .fi-thumb{background:#EBEDE7}
+.fi-lbody{flex:1;display:flex;flex-direction:column;gap:8px;padding-top:6px}
+.fi-lrow{display:flex;align-items:center;gap:7px}
+.fi-lrow p{font-size:11px;font-weight:600;color:var(--ink-sub)}
+.fi-spin{
+  width:14px;height:14px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--border);border-top-color:var(--primary-deep);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bar{height:9px;border-radius:5px;background:#EBEDE7}
+.bar.b1{width:74%}
+.bar.b2{width:48%}
+.shimmer{position:relative;overflow:hidden}
+.shimmer::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.72) 50%,transparent 70%);
+  transform:translateX(-100%);animation:sweep 1.25s ease-in-out infinite;
+}
+@keyframes sweep{to{transform:translateX(100%)}}
+
+/* Scene C — 골라서 요약 (선택 → 요약 2단) */
+.scn-sum{position:relative}
+.sum-select,.sum-result{
+  position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);
+}
+.sum-select{opacity:1}
+.sum-result{opacity:0}
+.scn-sum.live .sum-select{animation:fadeOut .4s var(--ease) 1.95s both}
+.scn-sum.live .sum-result{animation:fadeIn .45s var(--ease) 2.1s both}
+.scn-sum.live .pick .fi-check{animation:checkFill .38s var(--ease) both}
+.scn-sum.live .pick .fi-check svg{animation:fadeIn .3s var(--ease) both}
+.scn-sum.live .pick1 .fi-check,.scn-sum.live .pick1 .fi-check svg{animation-delay:.5s}
+.scn-sum.live .pick2 .fi-check,.scn-sum.live .pick2 .fi-check svg{animation-delay:.78s}
+.scn-sum.live .pick3 .fi-check,.scn-sum.live .pick3 .fi-check svg{animation-delay:1.06s}
+@keyframes checkFill{to{background:var(--primary-deep);border-color:var(--primary-deep)}}
+.scn-sum.live .sum-cta{animation:tapPress .42s var(--ease) 1.45s both}
+.scn-sum.live .rv{animation:rvUp .5s var(--ease) both}
+.scn-sum.live .r1{animation-delay:2.25s}
+.scn-sum.live .r2{animation-delay:2.4s}
+.scn-sum.live .r3{animation-delay:2.55s}
+.scn-sum.live .r4{animation-delay:2.7s}
+.scn-sum.live .r5{animation-delay:3s}
+.scn-sum.live .r6{animation-delay:3.3s}
+@keyframes rvUp{to{opacity:1;transform:none}}
+
+/* ============ 최종 CTA ============ */
+.cta{background:var(--ink);color:#fff;position:relative;overflow:hidden}
+.cta .blob-c{
+  position:absolute;width:440px;height:440px;border-radius:50%;
+  background:rgba(157,191,137,.2);filter:blur(80px);
+  top:-160px;left:50%;transform:translateX(-50%);pointer-events:none;
+}
+.cta-in{position:relative;z-index:1;text-align:center;max-width:600px;margin:0 auto}
+.cta .eyebrow{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#cdd9c4}
+.cta .eyebrow::before{background:var(--primary)}
+.cta h2{
+  font-size:clamp(1.85rem,4vw,2.7rem);margin:20px 0 16px;color:#fff;
+}
+.cta .lead{color:#b9c2b1}
+.cta .signup{margin:30px auto 0}
+.cta .signup-row{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16)}
+.cta .signup-row:focus-within{
+  border-color:var(--primary);box-shadow:0 0 0 4px rgba(157,191,137,.16);
+}
+.cta .signup input[type=email]{color:#fff}
+.cta .signup input[type=email]::placeholder{color:#8c9686}
+.cta .signup-note{color:#8c9686;justify-content:center}
+.cta .signup-note svg{color:var(--primary)}
+.cta .signup-msg.ok{color:var(--primary)}
+.cta .signup-msg.err{color:#e3a48f}
+
+/* ============ 푸터 ============ */
+.footer{background:var(--bg);border-top:1px solid var(--border);padding:44px 0}
+.footer-in{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
+}
+.footer .brand-mark{font-size:1.2rem}
+.footer-tag{font-size:.88rem;color:var(--ink-sub)}
+.footer-copy{font-size:.84rem;color:var(--ink-sub)}
+
+/* ============ reveal 애니메이션 ============ */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease), transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.08s}
+.reveal.d2{transition-delay:.16s}
+.reveal.d3{transition-delay:.24s}
+.float{animation:float 7s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+@media(max-width:920px){
+  .hero-grid{grid-template-columns:1fr;gap:48px}
+  .hero-copy{max-width:560px;margin:0 auto;text-align:center}
+  .hero .lead{margin-left:auto;margin-right:auto}
+  .hero .eyebrow{margin:0 auto}
+  .signup{margin-left:auto;margin-right:auto}
+  .signup-note{justify-content:center}
+}
+@media(max-width:560px){
+  .phone-stage{width:280px;height:581px}
+  .phone{transform:scale(.875);transform-origin:top left}
+  .pain,.feat,.step{padding:24px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none;transition:none}
+  .float{animation:none}
+  .btn,.feat{transition:none}
+  .demo-track{transition:none}
+  .demo,.demo-panel,.demo-panel *,.demo-panel *::after{animation:none!important}
+  .demo .rv{opacity:1;transform:none}
+  .scn-share .sheet{transform:translateY(0)}
+  .scn-share .dvid::after{opacity:1}
+  .scn-share .sapp.clip .sapp-ic::after{opacity:1;transform:scale(1)}
+  .fi-load{opacity:0}
+  .fi-done{opacity:1}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a href="#" class="brand" aria-label="clipnote 홈">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M8 7v9.5a4 4 0 0 0 8 0v-10a2.6 2.6 0 0 0-5.2 0v10.2a1.2 1.2 0 0 0 2.4 0V8"
+          stroke="#789966" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-mark">clipnote</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features" class="nav-link">기능</a>
+      <a href="#how" class="nav-link">작동 방식</a>
+      <a href="#cta" class="btn btn-primary nav-cta">출시 알림 받기</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <span class="blob blob-a"></span>
+  <span class="blob blob-b"></span>
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow reveal">2026년 출시 예정</span>
+        <h1 class="reveal d1">흘려보던 숏폼이,<br><span class="accent">쌓이는 지식</span>이 됩니다</h1>
+        <p class="lead reveal d2">유튜브 쇼츠와 인스타 릴스를 공유하면, clipnote가 영상을 분석해
+          핵심만 카드로 정리해 줘요. 주제별 ‘방’에 모아 두면, 필요할 때
+          요약·검색·대화로 다시 꺼내 쓸 수 있어요.</p>
+
+        <form class="signup reveal d3" data-source="히어로" novalidate>
+          <div class="signup-row">
+            <input type="email" name="email" required autocomplete="email"
+              placeholder="이메일 주소" aria-label="이메일 주소" />
+            <button type="submit" class="btn btn-primary">출시 알림 받기</button>
+          </div>
+          <p class="signup-note">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            출시 소식과 베타 초대 외에 다른 메일은 보내지 않아요.
+          </p>
+          <p class="signup-msg" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="hero-stage reveal d2">
+        <div class="phone-stage float">
+          <!-- 폰 목업 1 · 방 내부 — URL 피드 -->
+          <div class="phone" aria-hidden="true">
+            <div class="phone-island"></div>
+            <div class="phone-screen">
+              <div class="sb">
+                <span>9:41</span>
+                <span class="sb-ic">
+                  <svg viewBox="0 0 20 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+                  <svg viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.6 0 5 1 6.8 2.7l-1.4 1.5A7.6 7.6 0 0 0 8 4.6 7.6 7.6 0 0 0 2.6 6.7L1.2 5.2A9.6 9.6 0 0 1 8 2.5Zm0 3.6c1.5 0 2.9.6 4 1.6L8 11.5 4 7.7a5.6 5.6 0 0 1 4-1.6Z"/></svg>
+                  <svg viewBox="0 0 26 12" fill="none"><rect x="1" y="1.5" width="20" height="9" rx="2.6" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="3.5" width="14" height="5" rx="1.2" fill="currentColor"/><path d="M23 4.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+              </div>
+              <div class="app">
+                <div class="ah">
+                  <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <div class="ah-room">
+                    <div class="ah-avatar">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M12 4a2 2 0 0 0-2 2c0 .8.5 1.5 1.2 1.8L4 16.5A2 2 0 0 0 5.6 20h12.8a2 2 0 0 0 1.6-3.5l-7.2-8.7A2 2 0 0 0 14 6a2 2 0 0 0-2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="ah-meta"><b>패션 인사이트</b><span>멤버 6명</span></div>
+                  </div>
+                  <div class="ah-actions">
+                    <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM3.5 19a5.5 5.5 0 0 1 11 0M18 8v6M21 11h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="ic-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>
+                  </div>
+                </div>
+                <div class="tabs">
+                  <span class="tab on">피드</span>
+                  <span class="tab">AI 요약</span>
+                  <span class="tab">채팅</span>
+                </div>
+                <div class="urlbar">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span>URL을 붙여넣고 공유하세요</span>
+                  <span class="urlbar-add"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+                </div>
+                <div class="feed">
+                  <div class="fi on">
+                    <span class="fi-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <div class="fi-thumb t1"><span class="fi-dur">0:28</span></div>
+                    <div class="fi-body">
+                      <p class="fi-title">2024 패션 트렌드 키워드 7가지</p>
+                      <p class="fi-src">vogue.co.kr</p>
+                      <div class="fi-tags"><span class="pchip">트렌드</span><span class="pchip">2024</span></div>
+                      <p class="fi-by">유진A · 2시간 전</p>
+                    </div>
+                    <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                  </div>
+                  <div class="fi on">
+                    <span class="fi-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <div class="fi-thumb t2"><span class="fi-dur">0:31</span></div>
+                    <div class="fi-body">
+                      <p class="fi-title">미니멀 룩을 완성하는 5가지 요소</p>
+                      <p class="fi-src">hypebeast.com</p>
+                      <div class="fi-tags"><span class="pchip">미니멀</span><span class="pchip">스타일링</span></div>
+                      <p class="fi-by">민호 · 4시간 전</p>
+                    </div>
+                    <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                  </div>
+                  <div class="fi">
+                    <span class="fi-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <div class="fi-thumb t3"><span class="fi-dur">0:25</span></div>
+                    <div class="fi-body">
+                      <p class="fi-title">Y2K 리바이벌 트렌드 총정리</p>
+                      <p class="fi-src">highsnobiety.com</p>
+                      <div class="fi-tags"><span class="pchip">Y2K</span><span class="pchip">리바이벌</span></div>
+                      <p class="fi-by">태현 · 8시간 전</p>
+                    </div>
+                    <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                  </div>
+                </div>
+                <div class="feed-bottom">
+                  <span class="feed-count">선택 <b>2</b> / 10</span>
+                  <button class="feed-cta">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.5 4.6 2.8 6.9 7.4 7.4-4.6.5-6.9 2.8-7.4 7.4-.5-4.6-2.8-6.9-7.4-7.4C9.2 8.9 11.5 6.6 12 2Z"/></svg>
+                    AI 요약하기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 문제 인식 ============ -->
+<section class="section pains">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 class="h-sec">이런 적, 있으셨죠?</h2>
+    </div>
+    <div class="pain-grid">
+      <div class="pain reveal d1">
+        <p class="pain-q"><span class="qm">!</span>분명 유익했던 그 쇼츠</p>
+        <p>‘나중에 봐야지’ 하고 넘긴 영상. 며칠만 지나면 무슨 내용이었는지,
+          어디서 봤는지조차 기억나지 않아요. 다시 찾기도 어렵고요.</p>
+      </div>
+      <div class="pain reveal d2">
+        <p class="pain-q"><span class="qm">!</span>‘나에게 보내기’에 쌓인 링크</p>
+        <p>카카오톡 ‘나에게 보내기’로 던져둔 영상들. 저장한 순간엔 안심하지만,
+          정작 다시 열어보는 일은 거의 없어요.</p>
+      </div>
+      <div class="pain reveal d3">
+        <p class="pain-q"><span class="qm">!</span>친구가 보내준 그 링크</p>
+        <p>단톡방에 차곡차곡 쌓인 영상들. 누가 왜 보냈는지 흐려지고,
+          스크롤에 밀려 결국 아무도 다시 보지 않게 돼요.</p>
+      </div>
+    </div>
+    <p class="pain-resolve reveal d2">clipnote는 그 영상들이 흩어지지 않게 모아,
+      <em>AI가 지식으로 정리</em>해 드려요.</p>
+  </div>
+</section>
+
+<!-- ============ 기능 ============ -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow reveal">CLIPNOTE가 하는 일</span>
+      <h2 class="h-sec reveal d1" style="margin-top:14px">공유하고, 모으고, 물어보세요</h2>
+      <p class="lead reveal d2">복잡한 정리는 필요 없어요. 영상을 던지면 나머지는 clipnote가 합니다.</p>
+    </div>
+    <div class="feat-grid">
+      <article class="feat reveal d1">
+        <div class="feat-ic">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 15V4M12 4L8 8M12 4l4 4M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="feat-n">FEATURE 01</p>
+        <h3>공유하면, 끝</h3>
+        <p>보던 영상의 공유 시트에서 clipnote만 누르세요. 제목·핵심 내용·키워드 태그까지,
+          AI가 카드 한 장으로 정리합니다. 따로 메모할 필요가 없어요.</p>
+      </article>
+      <article class="feat reveal d2">
+        <div class="feat-ic">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 7a2 2 0 0 1 2-2h7l3 3h0M4 7h13a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 13h7M8 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <p class="feat-n">FEATURE 02</p>
+        <h3>주제별 ‘방’에 쌓이는 지식</h3>
+        <p>패션, 요리, 여행… 관심사별 방에 모아 두세요. 혼자 쓰는 방으로 시작해,
+          친구를 초대하면 함께 채우는 공유 보드가 됩니다.</p>
+      </article>
+      <article class="feat reveal d3">
+        <div class="feat-ic">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4V6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 7.3c.3 2.3 1.4 3.4 3.7 3.7-2.3.3-3.4 1.4-3.7 3.7-.3-2.3-1.4-3.4-3.7-3.7C10.6 10.7 11.7 9.6 12 7.3Z" fill="currentColor"/></svg>
+        </div>
+        <p class="feat-n">FEATURE 03</p>
+        <h3>골라서 요약하고, 물어보기</h3>
+        <p>요약하고 싶은 영상만 체크하면, AI가 선택한 영상을 종합해 요약해요.
+          “핵심 트렌드만 알려줘”처럼 바로 질문하고 답도 받을 수 있습니다.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 쇼케이스 ============ -->
+<section class="section showcase">
+  <div class="wrap">
+    <div class="show-grid">
+      <div class="show-copy">
+        <span class="eyebrow reveal">AI 요약</span>
+        <h2 class="h-sec reveal d1" style="margin-top:14px">쌓인 영상이,<br>이렇게 정리됩니다</h2>
+        <p class="lead reveal d2">필요한 영상만 골라 두면, clipnote가 선택한 영상을
+          종합해 한눈에 보이는 지식으로 정리해 줍니다.</p>
+        <div class="show-list">
+          <div class="show-item reveal d1">
+            <span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M5 6h14M5 11h14M5 16h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+            <div><h4>선택 요약</h4><p>체크한 영상들만 골라 핵심을 2~3문장으로 압축해 줘요.</p></div>
+          </div>
+          <div class="show-item reveal d2">
+            <span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M5 9.5l5-5a2 2 0 0 1 1.4-.6H17a2 2 0 0 1 2 2v5.1a2 2 0 0 1-.6 1.4l-5 5a2 2 0 0 1-2.8 0l-5.6-5.6a2 2 0 0 1 0-2.7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="14.5" cy="9.5" r="1.4" fill="currentColor"/></svg></span>
+            <div><h4>핵심 키워드</h4><p>반복되는 주제를 태그로 자동 집계해, 흐름이 보여요.</p></div>
+          </div>
+          <div class="show-item reveal d3">
+            <span class="dot"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4V6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+            <div><h4>방에게 질문</h4><p>궁금한 건 채팅으로 바로. 방의 모든 영상을 근거로 답해요.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="show-stage reveal d2">
+        <div class="phone-stage">
+          <!-- 폰 목업 2 · AI 요약 + 채팅 -->
+          <div class="phone" aria-hidden="true">
+            <div class="phone-island"></div>
+            <div class="phone-screen">
+              <div class="sb">
+                <span>9:41</span>
+                <span class="sb-ic">
+                  <svg viewBox="0 0 20 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+                  <svg viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.6 0 5 1 6.8 2.7l-1.4 1.5A7.6 7.6 0 0 0 8 4.6 7.6 7.6 0 0 0 2.6 6.7L1.2 5.2A9.6 9.6 0 0 1 8 2.5Zm0 3.6c1.5 0 2.9.6 4 1.6L8 11.5 4 7.7a5.6 5.6 0 0 1 4-1.6Z"/></svg>
+                  <svg viewBox="0 0 26 12" fill="none"><rect x="1" y="1.5" width="20" height="9" rx="2.6" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="3.5" width="14" height="5" rx="1.2" fill="currentColor"/><path d="M23 4.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+              </div>
+              <div class="app">
+                <div class="ah">
+                  <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <div class="ah-room"><div class="ah-meta"><b>AI 요약</b><span>패션 인사이트</span></div></div>
+                  <div class="ah-actions">
+                    <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                    <span class="ic-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>
+                  </div>
+                </div>
+                <div class="tabs">
+                  <span class="tab">피드</span>
+                  <span class="tab on">AI 요약</span>
+                  <span class="tab">채팅</span>
+                </div>
+                <div class="sumcard">
+                  <div class="sumcard-h">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.5 4.6 2.8 6.9 7.4 7.4-4.6.5-6.9 2.8-7.4 7.4-.5-4.6-2.8-6.9-7.4-7.4C9.2 8.9 11.5 6.6 12 2Z"/></svg>
+                    <b>선택한 영상 3개 요약</b>
+                  </div>
+                  <p class="sum">2024년 패션 트렌드는 ‘실용성’과 ‘개인 표현’이 핵심으로 떠오르고 있어요.
+                    미니멀과 Y2K 리바이벌이 동시에 자리잡는 흐름입니다.</p>
+                  <p class="sum-label">핵심 키워드</p>
+                  <div class="sum-tags">
+                    <span class="pchip">유틸리티</span><span class="pchip">젠더리스</span>
+                    <span class="pchip">미니멀</span><span class="pchip">Y2K 리바이벌</span>
+                  </div>
+                  <p class="sum-label">핵심 내용</p>
+                  <ul class="sum-bullets">
+                    <li>실용성과 스타일을 함께 잡는 아이템이 주목받고 있어요.</li>
+                    <li>레이어드와 미니멀 스타일링이 트렌드로 자리잡았어요.</li>
+                  </ul>
+                </div>
+                <div class="chat">
+                  <div class="bubble me">Y2K 리바이벌, 더 자세히 알려줘</div>
+                  <div class="bubble ai">2000년대 초반 스타일의 부활로, 빛나는 소재와
+                    로우라이즈, 그래픽 티셔츠가 핵심이에요. MZ세대를 중심으로 다시 인기를 끌고 있어요.</div>
+                </div>
+                <div class="chat-input">
+                  <span>궁금한 점을 물어보세요…</span>
+                  <span class="chat-send"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h13M12 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 작동 방식 — 화면 흐름 데모 ============ -->
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow reveal">작동 방식</span>
+      <h2 class="h-sec reveal d1" style="margin-top:14px">화면이, 이렇게 이어집니다</h2>
+      <p class="lead reveal d2">공유하고, 요약할 영상만 골라내면 끝.
+        오른쪽 화면에서 흐름을 직접 확인해 보세요.</p>
+    </div>
+    <div class="flow-grid">
+      <div class="flow-steps reveal">
+        <div class="flow-step">
+          <div class="flow-num">1</div>
+          <div class="flow-tx">
+            <h3>공유하기</h3>
+            <p>유튜브·인스타에서 보던 영상의 공유 시트를 열고 clipnote를 선택해요.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">2</div>
+          <div class="flow-tx">
+            <h3>AI가 분석</h3>
+            <p>영상이 방에 카드로 들어오고, 제목·핵심·키워드가 자동으로 채워져요.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">3</div>
+          <div class="flow-tx">
+            <h3>골라서 요약</h3>
+            <p>요약하고 싶은 영상만 체크하면, AI가 선택한 영상만 모아 정리하고 답해 줘요.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-stage reveal d1">
+        <div class="phone-stage">
+          <div class="phone" aria-hidden="true">
+            <div class="phone-island"></div>
+            <div class="phone-screen">
+              <div class="sb">
+                <span>9:41</span>
+                <span class="sb-ic">
+                  <svg viewBox="0 0 20 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="5" y="4" width="3" height="8" rx="1"/><rect x="10" y="2" width="3" height="10" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+                  <svg viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.6 0 5 1 6.8 2.7l-1.4 1.5A7.6 7.6 0 0 0 8 4.6 7.6 7.6 0 0 0 2.6 6.7L1.2 5.2A9.6 9.6 0 0 1 8 2.5Zm0 3.6c1.5 0 2.9.6 4 1.6L8 11.5 4 7.7a5.6 5.6 0 0 1 4-1.6Z"/></svg>
+                  <svg viewBox="0 0 26 12" fill="none"><rect x="1" y="1.5" width="20" height="9" rx="2.6" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="3.5" width="14" height="5" rx="1.2" fill="currentColor"/><path d="M23 4.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                </span>
+              </div>
+              <div class="demo">
+                <div class="demo-track">
+
+                  <!-- Scene A · 공유 -->
+                  <div class="demo-panel scn-share">
+                    <div class="dvid">
+                      <div class="dvid-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7-11-7Z"/></svg></div>
+                      <div class="dvid-side">
+                        <span><svg viewBox="0 0 24 24" fill="none"><path d="M12 20S4 14.6 4 9.2A3.7 3.7 0 0 1 12 7a3.7 3.7 0 0 1 8 2.2C20 14.6 12 20 12 20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                        <span><svg viewBox="0 0 24 24" fill="none"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4V6a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                        <span><svg viewBox="0 0 24 24" fill="none"><path d="M7 11l5-6 5 6M12 5v11M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                      </div>
+                      <div class="dvid-cap"><b>@fashion.daily</b><p>2024 패션 트렌드, 이것만 알면 끝</p></div>
+                    </div>
+                    <div class="sheet">
+                      <div class="sheet-grab"></div>
+                      <p class="sheet-h">공유</p>
+                      <div class="sheet-apps">
+                        <div class="sapp">
+                          <div class="sapp-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4 4V6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+                          <span>메시지</span>
+                        </div>
+                        <div class="sapp">
+                          <div class="sapp-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4.5c-4.7 0-8.5 2.9-8.5 6.5 0 2.3 1.6 4.4 4 5.5l-.8 3 3.5-2c.6.1 1.2.1 1.8.1 4.7 0 8.5-2.9 8.5-6.6 0-3.6-3.8-6.5-8.5-6.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+                          <span>카카오톡</span>
+                        </div>
+                        <div class="sapp clip">
+                          <div class="sapp-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M8 7v9.5a4 4 0 0 0 8 0v-10a2.6 2.6 0 0 0-5.2 0v10.2a1.2 1.2 0 0 0 2.4 0V8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                          <span>clipnote</span>
+                        </div>
+                        <div class="sapp">
+                          <div class="sapp-ic"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/></svg></div>
+                          <span>더보기</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Scene B · 분석 -->
+                  <div class="demo-panel scn-feed">
+                    <div class="ah">
+                      <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                      <div class="ah-room">
+                        <div class="ah-avatar">
+                          <svg viewBox="0 0 24 24" fill="none"><path d="M12 4a2 2 0 0 0-2 2c0 .8.5 1.5 1.2 1.8L4 16.5A2 2 0 0 0 5.6 20h12.8a2 2 0 0 0 1.6-3.5l-7.2-8.7A2 2 0 0 0 14 6a2 2 0 0 0-2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                        </div>
+                        <div class="ah-meta"><b>패션 인사이트</b><span>멤버 6명</span></div>
+                      </div>
+                      <div class="ah-actions">
+                        <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM3.5 19a5.5 5.5 0 0 1 11 0M18 8v6M21 11h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        <span class="ic-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>
+                      </div>
+                    </div>
+                    <div class="tabs">
+                      <span class="tab on">피드</span>
+                      <span class="tab">AI 요약</span>
+                      <span class="tab">채팅</span>
+                    </div>
+                    <div class="urlbar">
+                      <svg viewBox="0 0 24 24" fill="none"><path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span>URL을 붙여넣고 공유하세요</span>
+                      <span class="urlbar-add"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+                    </div>
+                    <div class="feed">
+                      <div class="fi fi-new">
+                        <div class="fi-load">
+                          <div class="fi-thumb shimmer"></div>
+                          <div class="fi-lbody">
+                            <div class="fi-lrow"><span class="fi-spin"></span><p>영상을 분석하고 있어요…</p></div>
+                            <div class="bar b1 shimmer"></div>
+                            <div class="bar b2 shimmer"></div>
+                          </div>
+                        </div>
+                        <div class="fi-done">
+                          <span class="fi-check"></span>
+                          <div class="fi-thumb t1"><span class="fi-dur">0:28</span></div>
+                          <div class="fi-body">
+                            <p class="fi-title">2024 패션 트렌드 키워드 7가지</p>
+                            <p class="fi-src">vogue.co.kr</p>
+                            <div class="fi-tags"><span class="pchip">트렌드</span><span class="pchip">2024</span></div>
+                            <p class="fi-by">방금 추가됨</p>
+                          </div>
+                          <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                        </div>
+                      </div>
+                      <div class="fi">
+                        <span class="fi-check"></span>
+                        <div class="fi-thumb t2"><span class="fi-dur">0:31</span></div>
+                        <div class="fi-body">
+                          <p class="fi-title">미니멀 룩을 완성하는 5가지 요소</p>
+                          <p class="fi-src">hypebeast.com</p>
+                          <div class="fi-tags"><span class="pchip">미니멀</span><span class="pchip">스타일링</span></div>
+                          <p class="fi-by">민호 · 4시간 전</p>
+                        </div>
+                        <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                      </div>
+                      <div class="fi">
+                        <span class="fi-check"></span>
+                        <div class="fi-thumb t3"><span class="fi-dur">0:25</span></div>
+                        <div class="fi-body">
+                          <p class="fi-title">Y2K 리바이벌 트렌드 총정리</p>
+                          <p class="fi-src">highsnobiety.com</p>
+                          <div class="fi-tags"><span class="pchip">Y2K</span><span class="pchip">리바이벌</span></div>
+                          <p class="fi-by">태현 · 8시간 전</p>
+                        </div>
+                        <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                      </div>
+                    </div>
+                    <div class="feed-bottom">
+                      <span class="feed-count">패션 인사이트 · 카드 <b>9</b>개</span>
+                    </div>
+                  </div>
+
+                  <!-- Scene C · 골라서 요약 -->
+                  <div class="demo-panel scn-sum">
+
+                    <!-- C-1 : 요약할 영상 체크 선택 -->
+                    <div class="sum-select">
+                      <div class="ah">
+                        <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        <div class="ah-room">
+                          <div class="ah-avatar">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4a2 2 0 0 0-2 2c0 .8.5 1.5 1.2 1.8L4 16.5A2 2 0 0 0 5.6 20h12.8a2 2 0 0 0 1.6-3.5l-7.2-8.7A2 2 0 0 0 14 6a2 2 0 0 0-2-2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                          </div>
+                          <div class="ah-meta"><b>패션 인사이트</b><span>요약할 영상 선택</span></div>
+                        </div>
+                        <div class="ah-actions">
+                          <span class="ic-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>
+                        </div>
+                      </div>
+                      <div class="tabs">
+                        <span class="tab on">피드</span>
+                        <span class="tab">AI 요약</span>
+                        <span class="tab">채팅</span>
+                      </div>
+                      <div class="feed">
+                        <div class="fi pick pick1">
+                          <span class="fi-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                          <div class="fi-thumb t1"><span class="fi-dur">0:28</span></div>
+                          <div class="fi-body">
+                            <p class="fi-title">2024 패션 트렌드 키워드 7가지</p>
+                            <p class="fi-src">vogue.co.kr</p>
+                            <div class="fi-tags"><span class="pchip">트렌드</span><span class="pchip">2024</span></div>
+                          </div>
+                          <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                        </div>
+                        <div class="fi pick pick2">
+                          <span class="fi-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                          <div class="fi-thumb t2"><span class="fi-dur">0:31</span></div>
+                          <div class="fi-body">
+                            <p class="fi-title">미니멀 룩을 완성하는 5가지 요소</p>
+                            <p class="fi-src">hypebeast.com</p>
+                            <div class="fi-tags"><span class="pchip">미니멀</span><span class="pchip">스타일링</span></div>
+                          </div>
+                          <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                        </div>
+                        <div class="fi">
+                          <span class="fi-check"></span>
+                          <div class="fi-thumb t3"><span class="fi-dur">0:47</span></div>
+                          <div class="fi-body">
+                            <p class="fi-title">데일리 메이크업 루틴</p>
+                            <p class="fi-src">youtube.com</p>
+                            <div class="fi-tags"><span class="pchip">뷰티</span><span class="pchip">데일리</span></div>
+                          </div>
+                          <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                        </div>
+                        <div class="fi pick pick3">
+                          <span class="fi-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                          <div class="fi-thumb t1"><span class="fi-dur">0:25</span></div>
+                          <div class="fi-body">
+                            <p class="fi-title">Y2K 리바이벌 트렌드 총정리</p>
+                            <p class="fi-src">highsnobiety.com</p>
+                            <div class="fi-tags"><span class="pchip">Y2K</span><span class="pchip">리바이벌</span></div>
+                          </div>
+                          <span class="fi-bm"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                        </div>
+                      </div>
+                      <div class="feed-bottom">
+                        <span class="feed-count">선택 <b>3</b> / 10</span>
+                        <button class="feed-cta sum-cta">
+                          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.5 4.6 2.8 6.9 7.4 7.4-4.6.5-6.9 2.8-7.4 7.4-.5-4.6-2.8-6.9-7.4-7.4C9.2 8.9 11.5 6.6 12 2Z"/></svg>
+                          AI 요약하기
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- C-2 : 선택한 영상만 요약 결과 -->
+                    <div class="sum-result">
+                      <div class="ah">
+                        <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        <div class="ah-room"><div class="ah-meta"><b>AI 요약</b><span>패션 인사이트</span></div></div>
+                        <div class="ah-actions">
+                          <span class="ic-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4-6 4V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+                          <span class="ic-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span>
+                        </div>
+                      </div>
+                      <div class="tabs">
+                        <span class="tab">피드</span>
+                        <span class="tab on">AI 요약</span>
+                        <span class="tab">채팅</span>
+                      </div>
+                      <div class="sumcard">
+                        <div class="sumcard-h rv r1">
+                          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.5 4.6 2.8 6.9 7.4 7.4-4.6.5-6.9 2.8-7.4 7.4-.5-4.6-2.8-6.9-7.4-7.4C9.2 8.9 11.5 6.6 12 2Z"/></svg>
+                          <b>선택한 영상 3개 요약</b>
+                        </div>
+                        <p class="sum rv r2">선택하신 3개 영상은 2024년 패션 트렌드를 다뤄요.
+                          ‘실용성’과 ‘개인 표현’이 핵심으로, 미니멀과 Y2K 리바이벌이 함께 떠오르는 흐름입니다.</p>
+                        <p class="sum-label rv r3">핵심 키워드</p>
+                        <div class="sum-tags rv r3">
+                          <span class="pchip">유틸리티</span><span class="pchip">젠더리스</span>
+                          <span class="pchip">미니멀</span><span class="pchip">Y2K 리바이벌</span>
+                        </div>
+                        <p class="sum-label rv r4">핵심 내용</p>
+                        <ul class="sum-bullets rv r4">
+                          <li>실용성과 스타일을 함께 잡는 아이템이 주목받고 있어요.</li>
+                          <li>레이어드와 미니멀 스타일링이 트렌드로 자리잡았어요.</li>
+                        </ul>
+                      </div>
+                      <div class="chat">
+                        <div class="bubble me rv r5">Y2K 리바이벌, 더 자세히 알려줘</div>
+                        <div class="bubble ai rv r6">2000년대 초반 스타일의 부활로, 빛나는 소재와
+                          로우라이즈가 핵심이에요. MZ세대를 중심으로 다시 인기를 끌고 있어요.</div>
+                      </div>
+                      <div class="chat-input">
+                        <span>궁금한 점을 물어보세요…</span>
+                        <span class="chat-send"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h13M12 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 최종 CTA ============ -->
+<section class="section cta" id="cta">
+  <span class="blob-c"></span>
+  <div class="wrap">
+    <div class="cta-in">
+      <span class="eyebrow reveal">베타 대기자 모집 중</span>
+      <h2 class="reveal d1">출시되면,<br>가장 먼저 알려드릴게요</h2>
+      <p class="lead reveal d2">clipnote는 2026년 출시를 준비하고 있어요.
+        이메일을 남겨 주시면 출시 소식과 베타 테스트 초대를 보내드릴게요.</p>
+
+      <form class="signup reveal d2" data-source="하단 CTA" novalidate>
+        <div class="signup-row">
+          <input type="email" name="email" required autocomplete="email"
+            placeholder="이메일 주소" aria-label="이메일 주소" />
+          <button type="submit" class="btn btn-cream">출시 알림 받기</button>
+        </div>
+        <p class="signup-note">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          언제든 한 번의 클릭으로 수신을 해제할 수 있어요.
+        </p>
+        <p class="signup-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap footer-in">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden="true">
+        <path d="M8 7v9.5a4 4 0 0 0 8 0v-10a2.6 2.6 0 0 0-5.2 0v10.2a1.2 1.2 0 0 0 2.4 0V8"
+          stroke="#789966" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-mark">clipnote</span>
+    </div>
+    <p class="footer-tag">본·공유한 쇼츠와 릴스를 AI가 정리해 주는 모바일 앱</p>
+    <p class="footer-copy">© 2026 clipnote</p>
+  </div>
+</footer>
+
+<script>
+/* =================================================================
+   이메일 수집 — Formspree
+   아래 FORMSPREE_ENDPOINT 의 YOUR_FORM_ID 를 실제 폼 ID로 교체하세요.
+   1) https://formspree.io 가입 → 새 폼 생성
+   2) 발급된 엔드포인트(https://formspree.io/f/xxxxxxx)로 아래 값 교체
+   교체 전에는 '데모 모드'로 동작해 제출 시 성공 화면만 보여줍니다.
+   ================================================================= */
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+
+(function () {
+  "use strict";
+
+  /* ---- 네비 스크롤 상태 ---- */
+  const nav = document.getElementById("nav");
+  const onScroll = () => nav.classList.toggle("scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  /* ---- 스크롤 리빌 ---- */
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reveals = document.querySelectorAll(".reveal");
+  if (reduce || !("IntersectionObserver" in window)) {
+    reveals.forEach((el) => el.classList.add("in"));
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+    );
+    reveals.forEach((el) => io.observe(el));
+  }
+
+  /* ---- 작동 방식: 화면 흐름 데모 ---- */
+  const demo = document.querySelector(".demo");
+  if (demo) {
+    const track = demo.querySelector(".demo-track");
+    const panels = Array.prototype.slice.call(demo.querySelectorAll(".demo-panel"));
+    const fsteps = Array.prototype.slice.call(document.querySelectorAll(".flow-step"));
+    // 장면별 노출 시간(ms) — 공유 / 분석 / 골라서 요약
+    const DUR = [3200, 3400, 4600];
+    const FADE = 380;
+    let cur = 0;
+    let timer = null;
+
+    const setLive = (i) => {
+      panels.forEach((p, idx) => p.classList.toggle("live", idx === i));
+      fsteps.forEach((s, idx) => s.classList.toggle("active", idx === i));
+    };
+    const slideTo = (i) => {
+      track.style.transform = "translateX(-" + ((i * 100) / 3) + "%)";
+    };
+    const go = (next) => {
+      const wrap = next === 0 && cur === 2;
+      cur = next;
+      if (wrap) {
+        // 마지막 → 처음: 부드럽게 페이드 후 스냅
+        demo.classList.add("fading");
+        setTimeout(() => {
+          track.classList.add("no-anim");
+          slideTo(0);
+          void track.offsetWidth;
+          track.classList.remove("no-anim");
+          demo.classList.remove("fading");
+          setLive(0);
+        }, FADE);
+      } else {
+        slideTo(next);
+        setLive(next);
+      }
+    };
+    const play = () => {
+      timer = setTimeout(() => {
+        go((cur + 1) % 3);
+        play();
+      }, DUR[cur]);
+    };
+    const start = () => {
+      if (!timer) play();
+    };
+    const stop = () => {
+      clearTimeout(timer);
+      timer = null;
+    };
+
+    if (reduce) {
+      track.classList.add("no-anim");
+      slideTo(1);
+      setLive(1);
+    } else {
+      setLive(0);
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(
+          (entries) => entries.forEach((e) => (e.isIntersecting ? start() : stop())),
+          { threshold: 0.35 }
+        ).observe(demo);
+      } else {
+        start();
+      }
+    }
+  }
+
+  /* ---- 이메일 폼 ---- */
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const demoMode = FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID");
+
+  document.querySelectorAll("form.signup").forEach((form) => {
+    const input = form.querySelector('input[type="email"]');
+    const msg = form.querySelector(".signup-msg");
+    const btn = form.querySelector("button[type=submit]");
+
+    const showMsg = (text, kind) => {
+      msg.textContent = "";
+      if (kind === "ok") {
+        msg.insertAdjacentHTML(
+          "afterbegin",
+          '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+        );
+      }
+      msg.appendChild(document.createTextNode(text));
+      msg.className = "signup-msg show " + kind;
+    };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = (input.value || "").trim();
+
+      if (!EMAIL_RE.test(email)) {
+        showMsg("올바른 이메일 주소를 입력해 주세요.", "err");
+        input.focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.style.opacity = "0.7";
+
+      const finishOk = () => {
+        form.classList.add("done");
+        showMsg("신청 완료! 출시되면 가장 먼저 알려드릴게요.", "ok");
+      };
+
+      if (demoMode) {
+        setTimeout(finishOk, 420); // 데모 모드: 네트워크 없이 성공 처리
+        return;
+      }
+
+      try {
+        const fd = new FormData(form);
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: "POST",
+          body: fd,
+          headers: { Accept: "application/json" },
+        });
+        if (res.ok) {
+          finishOk();
+        } else {
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          showMsg("잠시 후 다시 시도해 주세요.", "err");
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        showMsg("네트워크 오류예요. 잠시 후 다시 시도해 주세요.", "err");
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
