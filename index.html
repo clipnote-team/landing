@@ -1354,15 +1354,17 @@ h1,h2,h3{letter-spacing:-.022em;line-height:1.18;font-weight:800}
   </div>
 </footer>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>
 /* =================================================================
-   이메일 수집 — Formspree
-   아래 FORMSPREE_ENDPOINT 의 YOUR_FORM_ID 를 실제 폼 ID로 교체하세요.
-   1) https://formspree.io 가입 → 새 폼 생성
-   2) 발급된 엔드포인트(https://formspree.io/f/xxxxxxx)로 아래 값 교체
-   교체 전에는 '데모 모드'로 동작해 제출 시 성공 화면만 보여줍니다.
+   이메일 수집 — Supabase
+   Project: clipnote (Seoul, ap-northeast-2)
+   Table:   public.waitlist (email, source, created_at)
+   RLS:     anon은 INSERT만 허용 (SELECT/UPDATE/DELETE 차단)
+   Key는 publishable(anon) 키 — 클라이언트 노출 OK, 권한은 RLS가 통제.
    ================================================================= */
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+const SUPABASE_URL = "https://ntvgdgdmvcgjbkmmsklx.supabase.co";
+const SUPABASE_KEY = "sb_publishable_6TwX3PNH49lnsc_P6uk2_A_erv7p3-l";
 
 (function () {
   "use strict";
@@ -1462,9 +1464,11 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
     }
   }
 
-  /* ---- 이메일 폼 ---- */
+  /* ---- 이메일 폼 (Supabase) ---- */
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const demoMode = FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID");
+  const sb = (window.supabase && window.supabase.createClient)
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
 
   document.querySelectorAll("form.signup").forEach((form) => {
     const input = form.querySelector('input[type="email"]');
@@ -1492,38 +1496,29 @@ const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
         input.focus();
         return;
       }
+      if (!sb) {
+        showMsg("연결 오류예요. 잠시 후 다시 시도해 주세요.", "err");
+        return;
+      }
 
       btn.disabled = true;
       btn.style.opacity = "0.7";
 
-      const finishOk = () => {
+      const source = form.dataset.source || "기타";
+      const { error } = await sb.from("waitlist").insert({ email, source });
+
+      if (!error) {
         form.classList.add("done");
         showMsg("신청 완료! 출시되면 가장 먼저 알려드릴게요.", "ok");
-      };
-
-      if (demoMode) {
-        setTimeout(finishOk, 420); // 데모 모드: 네트워크 없이 성공 처리
-        return;
-      }
-
-      try {
-        const fd = new FormData(form);
-        const res = await fetch(FORMSPREE_ENDPOINT, {
-          method: "POST",
-          body: fd,
-          headers: { Accept: "application/json" },
-        });
-        if (res.ok) {
-          finishOk();
-        } else {
-          btn.disabled = false;
-          btn.style.opacity = "1";
-          showMsg("잠시 후 다시 시도해 주세요.", "err");
-        }
-      } catch (err) {
+      } else if (error.code === "23505") {
+        // 이메일 중복 — 사용자 입장에선 긍정적으로 처리
+        form.classList.add("done");
+        showMsg("이미 신청하셨어요. 출시되면 가장 먼저 알려드릴게요!", "ok");
+      } else {
         btn.disabled = false;
         btn.style.opacity = "1";
-        showMsg("네트워크 오류예요. 잠시 후 다시 시도해 주세요.", "err");
+        showMsg("잠시 후 다시 시도해 주세요.", "err");
+        console.error("[waitlist] insert error:", error);
       }
     });
   });
