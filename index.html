@@ -10,6 +10,13 @@
 <meta property="og:title" content="clipnote — 흘려보던 숏폼이, 쌓이는 지식이 됩니다" />
 <meta property="og:description" content="본/공유한 쇼츠·릴스를 AI가 분석·정리해 주는 모바일 앱. 출시 알림을 신청하세요." />
 <meta property="og:locale" content="ko_KR" />
+<script type="text/javascript">
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "x1nf07g78k");
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23F6FAF2'/%3E%3Cpath d='M11 9.5v9a5 5 0 0 0 10 0v-10a3.2 3.2 0 0 0-6.4 0v10a1.5 1.5 0 0 0 3 0V10' fill='none' stroke='%23789966' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -1171,7 +1178,7 @@ h1,h2,h3{letter-spacing:-.022em;line-height:1.18;font-weight:800}
 
         <form class="signup reveal d3" data-source="히어로" novalidate>
           <div class="signup-row">
-            <input type="email" name="email" required autocomplete="email"
+            <input type="email" name="email" required autocomplete="email" data-clarity-mask="True"
               placeholder="이메일 주소" aria-label="이메일 주소" />
             <button type="submit" class="btn btn-primary">출시 알림 받기</button>
           </div>
@@ -1945,7 +1952,7 @@ h1,h2,h3{letter-spacing:-.022em;line-height:1.18;font-weight:800}
 
       <form class="signup reveal d2" data-source="하단 CTA" novalidate>
         <div class="signup-row">
-          <input type="email" name="email" required autocomplete="email"
+          <input type="email" name="email" required autocomplete="email" data-clarity-mask="True"
             placeholder="이메일 주소" aria-label="이메일 주소" />
           <button type="submit" class="btn btn-cream">출시 알림 받기</button>
         </div>
@@ -2097,6 +2104,13 @@ const SUPABASE_KEY = "sb_publishable_CCuB-BSvsMAj8hPTsFbjkQ_XsbwLE5C";
     const input = form.querySelector('input[type="email"]');
     const msg = form.querySelector(".signup-msg");
     const btn = form.querySelector("button[type=submit]");
+    const source = form.dataset.source || "기타";
+
+    const trackClarity = (eventName) => {
+      if (typeof window.clarity !== "function") return;
+      window.clarity("set", "signup_source", source);
+      window.clarity("event", eventName);
+    };
 
     const showMsg = (text, kind) => {
       msg.textContent = "";
@@ -2124,22 +2138,25 @@ const SUPABASE_KEY = "sb_publishable_CCuB-BSvsMAj8hPTsFbjkQ_XsbwLE5C";
         return;
       }
 
+      trackClarity("waitlist_submit_attempt");
       btn.disabled = true;
       btn.style.opacity = "0.7";
 
-      const source = form.dataset.source || "기타";
       const { error } = await sb.from("waitlist").insert({ email, source });
 
       if (!error) {
         form.classList.add("done");
+        trackClarity("waitlist_submit_success");
         showMsg("신청 완료! 출시되면 가장 먼저 알려드릴게요.", "ok");
       } else if (error.code === "23505") {
         // 이메일 중복 — 사용자 입장에선 긍정적으로 처리
         form.classList.add("done");
+        trackClarity("waitlist_submit_duplicate");
         showMsg("이미 신청하셨어요. 출시되면 가장 먼저 알려드릴게요!", "ok");
       } else {
         btn.disabled = false;
         btn.style.opacity = "1";
+        trackClarity("waitlist_submit_error");
         showMsg("잠시 후 다시 시도해 주세요.", "err");
         console.error("[waitlist] insert error:", error);
       }
